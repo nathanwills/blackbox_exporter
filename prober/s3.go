@@ -16,6 +16,7 @@ package prober
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -30,6 +31,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/prometheus/blackbox_exporter/config"
+
+	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 var (
@@ -185,13 +188,21 @@ func getPresignedURL(ctx context.Context, bucket, key, method string) (string, e
 			Bucket: &bucket,
 		})
 		if err != nil {
-			return "", fmt.Errorf("failed to get bucket region: %w", err)
+			var serr *smithyhttp.ResponseError
+			if !errors.As(err, &serr) || serr.Response == nil {
+				return "", fmt.Errorf("failed to get bucket region: no smithy error %w", err)
+			}
+
+			region = serr.Response.Header.Get("x-amz-bucket-region")
+			if region == "" {
+				return "", fmt.Errorf("failed to get bucket region: region header not set: %w", err)
+			}
+		} else {
+			region = *output.BucketRegion
 		}
 
-		region = *output.BucketRegion
 		urlCache.regions[bucket] = region
 	}
-
 	s3Client, ok := urlCache.clients[region]
 	if !ok {
 		// Create new client if not in cache
