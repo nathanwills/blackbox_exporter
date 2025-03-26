@@ -174,7 +174,9 @@ func getPresignedURL(ctx context.Context, bucket, key, method string) (string, e
 
 	region, ok := urlCache.regions[bucket]
 	if !ok {
-		awsCfg, err := awsconfig.LoadDefaultConfig(ctx)
+		awsCfg, err := awsconfig.LoadDefaultConfig(ctx,
+			awsconfig.WithEC2IMDSRegion(),
+		)
 		if err != nil {
 			return "", fmt.Errorf("failed to load AWS config: %w", err)
 		}
