@@ -191,6 +191,12 @@ func MustNewRegexp(s string) Regexp {
 	return re
 }
 
+type S3Probe struct {
+	Method  string        `yaml:"method,omitempty"`   // GET or PUT
+	PutFile string        `yaml:"put_file,omitempty"` // Path to file to upload for PUT requests
+	Timeout time.Duration `yaml:"timeout,omitempty"`  // Timeout for HTTP requests
+}
+
 type Module struct {
 	Prober  string        `yaml:"prober,omitempty"`
 	Timeout time.Duration `yaml:"timeout,omitempty"`
@@ -199,6 +205,7 @@ type Module struct {
 	ICMP    ICMPProbe     `yaml:"icmp,omitempty"`
 	DNS     DNSProbe      `yaml:"dns,omitempty"`
 	GRPC    GRPCProbe     `yaml:"grpc,omitempty"`
+	S3      S3Probe       `yaml:"s3,omitempty"`
 }
 
 type HTTPProbe struct {
