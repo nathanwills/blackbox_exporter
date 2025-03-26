@@ -40,6 +40,7 @@ var (
 		"icmp": ProbeICMP,
 		"dns":  ProbeDNS,
 		"grpc": ProbeGRPC,
+		"s3":   ProbeS3,
 	}
 )
 
